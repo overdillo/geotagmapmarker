@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Geotag Map Marker</title>
+    <title>Aplikasi Penanda Peta & Geotagging</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -22,7 +22,7 @@
         ::-webkit-scrollbar-thumb:hover { background: #4f46e5; }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 h-screen flex flex-col overflow-hidden">
+<body class="bg-slate-900 text-slate-100 min-h-screen lg:h-screen flex flex-col lg:overflow-hidden">
 
     <header class="bg-slate-800 border-b border-slate-700 py-3 px-4 md:px-6 shadow-md flex items-center justify-between shrink-0 z-30">
         <div class="flex items-center space-x-3">
@@ -41,9 +41,9 @@
         </div>
     </header>
 
-    <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative min-h-0">
+    <main class="flex-1 flex flex-col lg:flex-row lg:overflow-hidden relative min-h-0">
         
-        <aside class="w-full lg:w-80 bg-slate-800/95 border-r border-slate-700 p-4 flex flex-col gap-3.5 overflow-y-auto shrink-0 shadow-lg z-20 max-h-full">
+        <aside class="w-full lg:w-80 bg-slate-800/95 border-r border-slate-700 p-4 flex flex-col gap-3.5 shrink-0 shadow-lg z-20">
             
             <div class="space-y-1.5">
                 <label class="text-xs md:text-sm font-semibold text-slate-300 flex items-center gap-2">
@@ -119,14 +119,14 @@
             </button>
         </aside>
 
-        <section class="flex-1 bg-slate-950 flex flex-col items-center justify-center relative overflow-hidden min-h-0 min-w-0">
+        <section class="flex-1 bg-slate-950 flex flex-col items-center justify-center relative overflow-hidden min-h-[450px] lg:min-h-0 min-w-0">
             
             <div id="empty-state" class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 z-10 bg-slate-950">
                 <div class="w-20 h-20 bg-slate-900 border border-slate-800 rounded-3xl flex items-center justify-center mb-4 text-indigo-400 shadow-xl">
                     <i class="fa-solid fa-map text-3xl"></i>
                 </div>
                 <h3 class="text-lg font-bold text-slate-200 mb-1">Belum Ada Peta yang Dimuat</h3>
-                <p class="text-sm text-slate-400 max-w-sm mb-5">Unggah gambar peta untuk mulai memberi nomor dan menggeser pin dengan presisi.</p>
+                <p class="text-sm text-slate-400 max-w-sm mb-5">Unggah gambar peta untuk mulai memberi nomor dan menggeser pin.</p>
                 <label class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm rounded-xl cursor-pointer shadow-lg transition-all inline-flex items-center gap-2">
                     <i class="fa-solid fa-folder-open"><span>Pilih Berkas Peta</span></i>
                     <input type="file" id="upload-input-direct" accept="image/*" class="hidden">
