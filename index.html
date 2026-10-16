@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Geotag Map Marker</title>
+    <title>Aplikasi Penanda Peta & Geotagging</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -165,10 +165,80 @@
         const markerSizeSlider = document.getElementById('marker-size-slider');
         const markerSizeLabel = document.getElementById('marker-size-label');
 
+    // --- CACHE FUNCTIONS (Added for 15-minute persistent state) ---
+    function saveCache() {
+        if (!uploadedImage) return;
+        const state = {
+            timestamp: new Date().getTime(),
+            imageSrc: uploadedImage.src,
+            points: points,
+            nextMarkerNumber: nextMarkerNumber,
+            zoomLevel: zoomLevel,
+            markerSizeMultiplier: markerSizeMultiplier
+        };
+        try {
+            localStorage.setItem('geomarker_cache', JSON.stringify(state));
+        } catch (e) {
+            console.warn('LocalStorage quota exceeded or unavailable', e);
+        }
+    }
+
+    function loadCache() {
+        const cachedData = localStorage.getItem('geomarker_cache');
+        if (!cachedData) return false;
+
+        try {
+            const state = JSON.parse(cachedData);
+            const now = new Date().getTime();
+            const fifteenMinutes = 15 * 60 * 1000;
+
+            // Check if cache expired (> 15 minutes)
+            if (now - state.timestamp > fifteenMinutes) {
+                localStorage.removeItem('geomarker_cache');
+                return false;
+            }
+
+            const img = new Image();
+            img.onload = function() {
+                uploadedImage = img;
+                canvas.width = img.naturalWidth;
+                canvas.height = img.naturalHeight;
+
+                points = state.points || [];
+                nextMarkerNumber = state.nextMarkerNumber || 1;
+                zoomLevel = state.zoomLevel || 1.0;
+                markerSizeMultiplier = state.markerSizeMultiplier || 1.0;
+
+                markerSizeSlider.value = markerSizeMultiplier;
+                markerSizeLabel.innerText = markerSizeMultiplier.toFixed(1) + 'x';
+
+                document.getElementById('empty-state').classList.add('hidden');
+                document.getElementById('canvas-container').classList.remove('hidden');
+                document.getElementById('canvas-hint').classList.remove('hidden');
+
+                updateCanvasDisplaySize();
+                redrawCanvas();
+                updateUI();
+            };
+            img.src = state.imageSrc;
+            return true;
+        } catch (e) {
+            localStorage.removeItem('geomarker_cache');
+            return false;
+        }
+    }
+
+    // Try loading cache on window load
+    window.addEventListener('DOMContentLoaded', () => {
+        loadCache();
+    });
+    // -------------------------------------------------------------
+
         markerSizeSlider.addEventListener('input', function(e) {
             markerSizeMultiplier = parseFloat(e.target.value);
             markerSizeLabel.innerText = markerSizeMultiplier.toFixed(1) + 'x';
             redrawCanvas();
+	    saveCache();
         });
 
         // Robust file input listeners
@@ -202,6 +272,7 @@
                     updateCanvasDisplaySize();
                     redrawCanvas();
                     updateUI();
+                    saveCache();
                 };
                 img.src = event.target.result;
             };
@@ -257,6 +328,7 @@
 
                 container.scrollLeft = (container.scrollLeft + mouseX) * ratio - mouseX;
                 container.scrollTop = (container.scrollTop + mouseY) * ratio - mouseY;
+                saveCache();
             }
         }, { passive: false });
 
@@ -272,6 +344,7 @@
             updateCanvasDisplaySize();
             container.scrollLeft = (container.scrollLeft + centerX) * ratio - centerX;
             container.scrollTop = (container.scrollTop + centerY) * ratio - centerY;
+            saveCache();
         }
 
         function zoomOut() {
@@ -286,6 +359,7 @@
             updateCanvasDisplaySize();
             container.scrollLeft = (container.scrollLeft + centerX) * ratio - centerX;
             container.scrollTop = (container.scrollTop + centerY) * ratio - centerY;
+            saveCache();
         }
 
         function resetZoom() {
@@ -294,6 +368,7 @@
             updateCanvasDisplaySize();
             container.scrollLeft = 0;
             container.scrollTop = 0;
+            saveCache();
         }
 
         function getCanvasCoordinates(e) {
@@ -363,6 +438,7 @@
                     updateCanvasDisplaySize();
                     container.scrollLeft = (container.scrollLeft + mouseX) * ratio - mouseX;
                     container.scrollTop = (container.scrollTop + mouseY) * ratio - mouseY;
+	            saveCache();
                 }
 
                 if (prevMidpoint) {
@@ -439,6 +515,7 @@
                 updateUI();
                 isDraggingMarker = false;
                 draggedPointIndex = null;
+	        saveCache();
             }
         }
 
@@ -472,6 +549,7 @@
             });
             redrawCanvas();
             updateUI();
+            saveCache();
         });
 
         function redrawCanvas() {
@@ -537,6 +615,7 @@
             nextMarkerNumber = points.length > 0 ? Math.max(...points.map(p => p.number)) + 1 : 1;
             redrawCanvas();
             updateUI();
+            saveCache();
         }
 
         function clearPoints() {
@@ -545,6 +624,7 @@
             nextMarkerNumber = 1;
             redrawCanvas();
             updateUI();
+            saveCache();
         }
 
         function removePoint(index) {
@@ -555,6 +635,7 @@
             nextMarkerNumber = points.length + 1;
             redrawCanvas();
             updateUI();
+            saveCache();
         }
 
         function updateLiveCoords(index) {
